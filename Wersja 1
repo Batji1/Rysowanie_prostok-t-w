@@ -1,0 +1,74 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RectangleDrawer {
+    private JFrame frame;
+    private DrawPanel drawPanel;
+    private List<Rectangle> rectangles;
+
+    public static void main(String[] args) {
+        RectangleDrawer drawer = new RectangleDrawer();
+        drawer.createAndShowGUI();
+    }
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Rectangle Drawer");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(600, 400);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        drawPanel = new DrawPanel();
+        drawPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Rectangle rect = new Rectangle(e.getX(), e.getY(), 0, 0);
+                rectangles.add(rect);
+                drawPanel.repaint();
+            }
+        });
+        drawPanel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int index = rectangles.size() - 1;
+                Rectangle rect = rectangles.get(index);
+                rect.setSize(e.getX() - rect.x, e.getY() - rect.y);
+                drawPanel.repaint();
+            }
+        });
+
+        frame.getContentPane().add(drawPanel);
+        rectangles = new ArrayList<>();
+    }
+
+    private class DrawPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setStroke(new BasicStroke(2));
+            for (Rectangle rect : rectangles) {
+                g2d.draw(rect);
+                if (hasIntersection(rect)) {
+                    g2d.setColor(Color.RED);
+                } else {
+                    g2d.setColor(Color.BLACK);
+                }
+                g2d.fill(rect);
+            }
+        }
+
+        private boolean hasIntersection(Rectangle rect) {
+            for (Rectangle other : rectangles) {
+                if (rect != other && rect.intersects(other)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+}
